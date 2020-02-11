@@ -4,20 +4,16 @@ const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const randToken = require('rand-token')
-
 const passport = require('passport')
+
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 
-const ACCESS_SECRET = "lorem1ipsum2dolor3sit4amet678"
-let refreshTokens = {}
-let opts = {}
+const { ACCESS_SECRET } = require('./config')
+const { cookieExtractor } = require('./utils')
 
-const cookieExtractor = function(req) {
-  var token = null;
-  if (req && req.cookies) token = req.cookies['jwt'];
-  return token;
-};
+let refreshTokens = {} // redis session store
+let opts = {}
 
 app.use(express.static('public'))
 app.use(cookieParser(ACCESS_SECRET))
@@ -55,11 +51,12 @@ app.post('/login', (req, res, next) => {
     'username': username,
     'role': 'admin',
   }
-  console.log(req)
   const token = jwt.sign(user, ACCESS_SECRET, { expiresIn: 300 })
   const refreshToken = randToken.uid(256)
+
+  // store refresh token (in redis?)
   refreshTokens[refreshToken] = username
-  
+
   // respond with a JSON refreshToken 
   // set cookie with the access token 
   res.cookie("jwt", 'JWT ' + token, { httpOnly: true })
@@ -69,7 +66,7 @@ app.post('/login', (req, res, next) => {
 app.post('/token', (req, res, next) => {
   const username = req.body.username
   const refreshToken = req.body.refreshToken
-  console.log(req)
+
   if (refreshToken in refreshTokens && refreshTokens[refreshToken] == username) {
       const user = {
         'username': username,
@@ -79,7 +76,7 @@ app.post('/token', (req, res, next) => {
 
       // set cookie with the access token  
       res.cookie("jwt", 'JWT ' + token, { httpOnly: true })
-      res.json({ token: 'JWT ' + token })
+      res.sendStatus(204)
   } else {
     res.sendStatus(401)
   }
@@ -97,7 +94,9 @@ app.post('/token/reject', (req, res, next) => {
 app.get('/test_jwt', passport.authenticate('jwt', { session: false }), (req, res) => {
   console.log(req)
   res.json({
-    success: 'You are authenticated with JWT!', user: req.user
+    success: 'You are authenticated with JWT!', 
+    user: req.user,
+    refreshTokens: refreshTokens
   })
 })
 

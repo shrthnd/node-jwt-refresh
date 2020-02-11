@@ -7,7 +7,7 @@
   <title>Node JWT Refresh</title>
 </head>
 <body>
-  
+
   <form id="loginForm">
       <label for="username">Username</label><br >
       <input id="username" type="text" placeholder="username" /><br >
@@ -27,10 +27,12 @@
   </form>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script>
+    var loginUrl = 'http://localhost:3000/login';
+    var tokenUrl = 'http://localhost:3000/token';
+    var revokeUrl = 'http://localhost:3000/token/reject';
 
-    function authHeader() {
+    function getRefreshToken() {
       var user = JSON.parse(localStorage.getItem('user'));
-
       if (user && user.refreshToken) {
         // for Node.js Express back-end
         return user.refreshToken;
@@ -51,10 +53,6 @@
     }
 
     $(function() {
-      var loginUrl = 'http://localhost:3000/login';
-      var tokenUrl = 'http://localhost:3000/token';
-      var revokeUrl = 'http://localhost:3000/token/reject';
-      
       $("#loginForm").on('submit', function(e) {
         e.preventDefault();
         var data = 'username='+document.getElementById("username").value+'&password='+document.getElementById("password").value; 
@@ -76,7 +74,7 @@
 
       $("#tokenForm").on('submit', function(e) {
         e.preventDefault();
-        var data = 'username='+document.getElementById("username").value+'&refreshToken='+authHeader(); 
+        var data = 'username='+document.getElementById("username").value+'&refreshToken='+getRefreshToken(); 
         $.ajax({
           url: tokenUrl,
           type: "POST",
@@ -95,7 +93,7 @@
 
       $("#revokeForm").on('submit', function(e) {
         e.preventDefault();
-        var data = 'refreshToken='+authHeader(); 
+        var data = 'refreshToken='+getRefreshToken(); 
         console.log(data);
         $.ajax({
           url: revokeUrl,
