@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Node JWT Refresh</title>
+</head>
+<body>
+  
+  <form id="loginForm">
+      <label for="username">Username</label><br >
+      <input id="username" type="text" placeholder="username" /><br >
+      <label for="password">Password</label><br >
+      <input id="password" type="password" placeholder="password" /><br >
+      <input id="submit" type="submit" value="Sign in">
+  </form>
+
+  <form id="tokenForm">
+      <label for="refreshToken">Refresh Token</label><br >
+      <input id="refreshToken" type="text" placeholder="refresh token" /><br >
+      <input id="submit" type="submit" value="Refresh cookie">
+  </form>
+
+  <form id="revokeForm">
+      <input id="submit" type="submit" value="Revoke token">
+  </form>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script>
+
+    function authHeader() {
+      var user = JSON.parse(localStorage.getItem('user'));
+
+      if (user && user.refreshToken) {
+        // for Node.js Express back-end
+        return user.refreshToken;
+      } else {
+        return '';
+      } 
+    }
+
+    function login(response) {
+        if (response.refreshToken) {
+          localStorage.setItem('user', JSON.stringify(response));
+          $('#refreshToken').val(response.refreshToken)
+        }
+    }
+
+    function logout() {
+      localStorage.removeItem('user');
+    }
+
+    $(function() {
+      var loginUrl = 'http://localhost:3000/login';
+      var tokenUrl = 'http://localhost:3000/token';
+      var revokeUrl = 'http://localhost:3000/token/reject';
+      
+      $("#loginForm").on('submit', function(e) {
+        e.preventDefault();
+        var data = 'username='+document.getElementById("username").value+'&password='+document.getElementById("password").value; 
+        $.ajax({
+          url: loginUrl,
+          type: 'POST',
+          data: data,
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function(response) {
+            login(response)
+          },
+          error: function(error) {
+            console.log(JSON.stringify(error))
+          }
+        })
+      });
+
+      $("#tokenForm").on('submit', function(e) {
+        e.preventDefault();
+        var data = 'username='+document.getElementById("username").value+'&refreshToken='+authHeader(); 
+        $.ajax({
+          url: tokenUrl,
+          type: "POST",
+          data: data,
+          xhrFields: {
+            withCredentials: true
+          },
+          success: function(response) {
+            console.log(response)
+          },
+          error: function(error) {
+            console.log(JSON.stringify(error))
+          }
+        });
+      });
+
+      $("#revokeForm").on('submit', function(e) {
+        e.preventDefault();
+        var data = 'refreshToken='+authHeader(); 
+        console.log(data);
+        $.ajax({
+          url: revokeUrl,
+          type: "POST",
+          data: data,
+          success: function(response) {
+            logout()
+            console.log(response)
+          },
+          error: function(error) {
+            console.log(JSON.stringify(error))
+          }
+        });
+        
+      });
+
+    });
+  </script>
+</body>
+</html>
