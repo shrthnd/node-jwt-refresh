@@ -7,3 +7,23 @@ services:
     volumes:
       - ./data/redis:/data
     restart: unless-stopped
+    networks:
+      - node-jwt-resfresh
+  db:
+    container_name: psql
+    restart: unless-stopped
+    image: psql
+    build:
+      context: ./db
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234  # To be moved to environment file
+      POSTGRES_DB: node_jwt_refresh
+    ports:
+      - 5432:5432
+    networks:
+      - node-jwt-resfresh
+networks:
+  node-jwt-resfresh:

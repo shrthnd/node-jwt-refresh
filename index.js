@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const redis = require('redis')
+const { Pool, Client } = require('pg')
+const { postgraphile } = require("postgraphile");
 const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
@@ -12,7 +14,14 @@ const randToken = require('rand-token')
 const JwtStrategy = require('passport-jwt').Strategy
 
 const { cookieExtractor } = require('./utils')
-const { ACCESS_SECRET } = require('./config')
+const { 
+  ACCESS_SECRET, 
+  POSTGRES_DB, 
+  POSTGRES_SCHEMA_AUTH,
+  POSTGRES_SCHEMA,
+} = require('./config')
+
+const isDev = process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "staging";    
 
 const jwtStrategyOptions = {
   jwtFromRequest: cookieExtractor,
@@ -28,8 +37,8 @@ const jwtTokenOptions = {
 
 const userObject = (username) => {
   return {
-    'username': username,
-    'role': 'admin',
+    'username': username  ,
+    'role': username === "joe@shrthnd.org" ? 'admin' : 'user',
   }
 }
 
@@ -162,5 +171,37 @@ app.get('/api/v1/test_jwt', passport.authenticate('jwt', { session: false }), (r
     user: req.user,
   })
 })
+
+// expose public graphql schema to authenticated users 
+app.use(passport.authenticate('jwt', { session: false }), postgraphile(POSTGRES_DB, POSTGRES_SCHEMA, {
+  graphiql: isDev,
+  enhanceGraphiql: isDev,
+  graphiqlRoute: '/graphiql',
+  watchPg: isDev,
+  dynamicJson: true,
+  showErrorStack: isDev,
+  extendedErrors:
+    isDev
+      ? [
+          "errcode",
+          "severity",
+          "detail",
+          "hint",
+          "positon",
+          "internalPosition",
+          "internalQuery",
+          "where",
+          "schema",
+          "table",
+          "column",
+          "dataType",
+          "constraint",
+          "file",
+          "line",
+          "routine",
+        ]
+      : ["errcode"],
+    enableQueryBatching: true,
+}))
 
 app.listen(3000)
