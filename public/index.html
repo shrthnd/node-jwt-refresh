@@ -13,7 +13,8 @@
       <input id="username" type="text" placeholder="username" /><br >
       <label for="password">Password</label><br >
       <input id="password" type="password" placeholder="password" /><br >
-      <input id="submit" type="submit" value="Sign in">
+      <input id="register" type="submit" value="Register">
+      <input id="authenticate" type="submit" value="Sign in">
   </form>
 
   <form id="tokenForm">
@@ -23,18 +24,19 @@
   </form>
 
   <form id="revokeForm">
-      <input id="submit" type="submit" value="Revoke token">
+      <input id="submit" type="submit" value="Revoke token + cookie">
   </form>
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script>
-    var loginUrl = 'http://localhost:3000/login';
-    var tokenUrl = 'http://localhost:3000/token';
-    var revokeUrl = 'http://localhost:3000/token/reject';
+    var registerUrl = 'http://localhost:3000/api/v1/register';
+    var loginUrl = 'http://localhost:3000/api/v1/login';
+    var tokenUrl = 'http://localhost:3000/api/v1/token';
+    var revokeUrl = 'http://localhost:3000/api/v1/token/revoke';
 
     function getRefreshToken() {
-      var user = JSON.parse(localStorage.getItem('user'));
+      var user = JSON.parse(localStorage.getItem('__jwt_refresh'));
       if (user && user.refreshToken) {
-        // for Node.js Express back-end
         return user.refreshToken;
       } else {
         return '';
@@ -43,17 +45,39 @@
 
     function login(response) {
         if (response.refreshToken) {
-          localStorage.setItem('user', JSON.stringify(response));
-          $('#refreshToken').val(response.refreshToken)
+          localStorage.setItem('__jwt_refresh', JSON.stringify(response));
+          $('#refreshToken').val(response.refreshToken);
         }
     }
 
     function logout() {
-      localStorage.removeItem('user');
+      localStorage.removeItem('__jwt_refresh');
+      $('#refreshToken').val('');
     }
 
     $(function() {
-      $("#loginForm").on('submit', function(e) {
+      $("#refreshToken").val(getRefreshToken());
+      
+      $("#register").on('click', function(e) {
+        e.preventDefault();
+        var data = 'username='+document.getElementById("username").value+'&password='+document.getElementById("password").value; 
+        $.ajax({
+          url: registerUrl,
+          type: 'POST',
+          data: data,
+          xhrFields: {
+            withCredentials: false
+          },
+          success: function(response) {
+            login(response);
+          },
+          error: function(error) {
+            console.log(JSON.stringify(error));
+          }
+        })
+      });
+
+      $("#authenticate").on('click', function(e) {
         e.preventDefault();
         var data = 'username='+document.getElementById("username").value+'&password='+document.getElementById("password").value; 
         $.ajax({
@@ -64,17 +88,17 @@
             withCredentials: true
           },
           success: function(response) {
-            login(response)
+            login(response);
           },
           error: function(error) {
-            console.log(JSON.stringify(error))
+            console.log(JSON.stringify(error));
           }
         })
       });
 
       $("#tokenForm").on('submit', function(e) {
         e.preventDefault();
-        var data = 'username='+document.getElementById("username").value+'&refreshToken='+getRefreshToken(); 
+        var data = 'refreshToken='+getRefreshToken(); 
         $.ajax({
           url: tokenUrl,
           type: "POST",
@@ -83,10 +107,10 @@
             withCredentials: true
           },
           success: function(response) {
-            console.log(response)
+            console.log(response);
           },
           error: function(error) {
-            console.log(JSON.stringify(error))
+            console.log(JSON.stringify(error));
           }
         });
       });
@@ -94,17 +118,16 @@
       $("#revokeForm").on('submit', function(e) {
         e.preventDefault();
         var data = 'refreshToken='+getRefreshToken(); 
-        console.log(data);
         $.ajax({
           url: revokeUrl,
           type: "POST",
           data: data,
           success: function(response) {
-            logout()
-            console.log(response)
+            logout();
+            console.log(response);
           },
           error: function(error) {
-            console.log(JSON.stringify(error))
+            console.log(JSON.stringify(error));
           }
         });
         
