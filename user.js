@@ -68,7 +68,6 @@ exports.login = (req, res, next) => {
   const username = req.body.username
   const password = req.body.password
 
-  // add database check
   if (username.length && password.length) {
     // get secrets from temporary user store
     rediscl.get(username, function(error, result) {
