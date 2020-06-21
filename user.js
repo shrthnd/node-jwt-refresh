@@ -7,10 +7,7 @@ const { cookieExtractor } = require('./utils')
 const randToken = require('rand-token')
 
 const { 
-  ACCESS_SECRET, 
-  POSTGRES_DB, 
-  POSTGRES_SCHEMA_AUTH,
-  POSTGRES_SCHEMA,
+  ACCESS_SECRET,
 } = require('./config')
 
 const jwtStrategyOptions = {

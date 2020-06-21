@@ -8,7 +8,7 @@ services:
       - ./data/redis:/data
     restart: unless-stopped
     networks:
-      - node-jwt-resfresh
+      - node-jwt-refresh
   db:
     container_name: psql
     restart: unless-stopped
@@ -24,6 +24,6 @@ services:
     ports:
       - 5432:5432
     networks:
-      - node-jwt-resfresh
+      - node-jwt-refresh
 networks:
-  node-jwt-resfresh:
+  node-jwt-refresh:
