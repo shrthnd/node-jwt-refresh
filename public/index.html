@@ -29,33 +29,34 @@
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script>
-    var registerUrl = 'http://localhost:3000/api/v1/register';
-    var loginUrl = 'http://localhost:3000/api/v1/login';
-    var tokenUrl = 'http://localhost:3000/api/v1/token';
-    var revokeUrl = 'http://localhost:3000/api/v1/token/revoke';
-
-    function getRefreshToken() {
-      var user = JSON.parse(localStorage.getItem('__jwt_refresh'));
-      if (user && user.refreshToken) {
-        return user.refreshToken;
-      } else {
-        return '';
-      } 
-    }
-
-    function login(response) {
-        if (response.refreshToken) {
-          localStorage.setItem('__jwt_refresh', JSON.stringify(response));
-          $('#refreshToken').val(response.refreshToken);
-        }
-    }
-
-    function logout() {
-      localStorage.removeItem('__jwt_refresh');
-      $('#refreshToken').val('');
-    }
 
     $(function() {
+      var registerUrl = 'http://localhost:3000/api/v1/register';
+      var loginUrl = 'http://localhost:3000/api/v1/login';
+      var tokenUrl = 'http://localhost:3000/api/v1/token';
+      var revokeUrl = 'http://localhost:3000/api/v1/token/revoke';
+
+      function getRefreshToken() {
+        var user = JSON.parse(localStorage.getItem('__jwt_refresh'));
+        if (user && user.refreshToken) {
+          return user.refreshToken;
+        } else {
+          return '';
+        } 
+      }
+
+      function login(response) {
+          if (response.refreshToken) {
+            localStorage.setItem('__jwt_refresh', JSON.stringify(response));
+            $('#refreshToken').val(response.refreshToken);
+          }
+      }
+
+      function logout() {
+        localStorage.removeItem('__jwt_refresh');
+        $('#refreshToken').val('');
+      }
+      
       $("#refreshToken").val(getRefreshToken());
       
       $("#register").on('click', function(e) {
