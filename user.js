@@ -15,7 +15,7 @@ const jwtStrategyOptions = {
   secretOrKey: ACCESS_SECRET,
 }
 const jwtCookieOptions = { 
-  // secure: true,
+  secure: true,
   httpOnly: true,
 }
 const jwtTokenOptions = {
