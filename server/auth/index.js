@@ -3,12 +3,12 @@ var router = express.Router();
 const redis = require('redis')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { cookieExtractor } = require('./utils')
+const { cookieExtractor } = require('../utils')
 const randToken = require('rand-token')
 
 const { 
   ACCESS_SECRET,
-} = require('./config')
+} = require('../config')
 
 const jwtStrategyOptions = {
   jwtFromRequest: cookieExtractor,

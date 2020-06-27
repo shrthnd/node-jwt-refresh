@@ -9,12 +9,12 @@ services:
     restart: unless-stopped
     networks:
       - node-jwt-refresh
-  db:
+  postgres:
     container_name: psql
     restart: unless-stopped
     image: psql
     build:
-      context: ./db
+      context: ./docker/postgres
     volumes:
       - ./data/postgresql:/var/lib/postgresql/data
     environment:

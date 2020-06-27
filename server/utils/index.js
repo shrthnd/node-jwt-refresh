@@ -3,7 +3,7 @@ const {
   POSTGRES_DB, 
   POSTGRES_SCHEMA_AUTH,
   POSTGRES_SCHEMA,
-} = require('./config')
+} = require('../config')
 
 const JwtStrategy = require('passport-jwt').Strategy
 
