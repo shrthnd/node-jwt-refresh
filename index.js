@@ -55,4 +55,5 @@ app.get('/api/v1/test_jwt', passport.authenticate('jwt', { session: false }), (r
   })
 })
 
+console.log(`API is running at localhost: ${process.env.PORT || 3000}`)
 app.listen(process.env.PORT || 3000)
